@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  webapp:
+    image: nielsxqting/webapp
+    ports:
+      - "3000:3000"
+    command: yarn start
+    environment:
+      - MYSQL_URL=mysql://appuser:password@db:3306/database
+    depends_on:
+      - db
+    networks:
+      - appnetwork
+
+  db:
+    image: mysql:8.0 
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword  
+      MYSQL_DATABASE: database 
+      MYSQL_USER: appuser       
+      MYSQL_PASSWORD: password 
+    volumes:
+      - mysql-data:/var/lib/mysql  
+    networks:
+      - appnetwork  
+    ports:
+      - "3306:3306"  
+
+  test:
+    image: nielsxqting/webapp  
+    environment:
+      - API_URL=http://webapp:3000  
+      - MYSQL_URL=mysql://appuser:password@db:3306/database
+    depends_on:
+      - webapp  
+    command: yarn test  
+    networks:
+      - appnetwork
+
+volumes:
+  mysql-data:
+
+networks:
+  appnetwork:
+    driver: bridge
